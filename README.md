@@ -14,7 +14,7 @@ SparkSDR has no TCI interface of its own. It does have two other interfaces:
 
 CAT4OM already supports TCI radios (ExpertSDR/SunSDR style) through handbook files. The bridge translates between the two. CAT4OM only needs the included handbook, `sparksdr-tci.xml`.
 
-> **Status: early beta (v0.1.0).** Tested with SparkSDR 2.0.991.0 (WebSocket protocol 0.1.4), an AirspyHF+ (receive only) and CAT4OM. Frequency and mode control work in both directions. PTT is implemented but hasn't been tested on a transmit-capable radio yet.
+> **Status: alpha 0.0.1.** Tested with SparkSDR 2.0.991.0 (WebSocket protocol 0.1.4), an AirspyHF+ (receive only) and CAT4OM. Frequency and mode control work in both directions. PTT is implemented but hasn't been tested on a transmit-capable radio yet.
 
 ## What it does
 
@@ -42,7 +42,17 @@ CAT4OM already supports TCI radios (ExpertSDR/SunSDR style) through handbook fil
 | `sparksdr-tci.xml` | CAT4OM radio handbook for the bridge, based on `sunsdr-tci.xml`. |
 | `LICENSE` | GNU GPL v3. |
 
-## Requirements
+## Windows executable
+
+`SparkSDR2CAT4OM-alpha-0.0.1.exe` is a single-file build of the bridge made with PyInstaller. It's attached to the GitHub release, and you don't need Python to run it. It takes the same command-line options as the script, e.g.
+
+```
+SparkSDR2CAT4OM-alpha-0.0.1.exe --rigctl 0=51111
+```
+
+Double-clicking it starts the bridge with the default settings. The log file is written to the current folder. Windows SmartScreen may warn about an unsigned executable: choose *More info → Run anyway*.
+
+## Requirements (running from source)
 
 - Python 3.9 or later
 - `pip install websockets`
@@ -80,6 +90,7 @@ CAT4OM already supports TCI radios (ExpertSDR/SunSDR style) through handbook fil
 | `--write-config FILE` | none | Write the default settings to a JSON file and exit |
 | `-v`, `--verbose` | off | Log every message in both directions |
 | `--log-file FILE` | `sparksdr_tci_bridge.log` | Log file (also printed to the console) |
+| `--version` | | Show the version and exit |
 
 ### Config file and mode mapping
 
@@ -150,7 +161,7 @@ Further reading: [SparkSDR WebSocket API wiki](https://github.com/nricciar/spark
 - [ ] Real split support (VFO B → second receiver / TX frequency)
 - [ ] Optional TCI RX/TX audio for TCI clients that support it
 - [ ] CW via SparkSDR's cwdaemon emulation
-- [ ] Single-file Windows executable (PyInstaller)
+- [x] Single-file Windows executable (PyInstaller) — alpha 0.0.1
 
 ## Licence
 

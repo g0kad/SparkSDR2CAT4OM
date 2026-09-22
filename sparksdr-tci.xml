@@ -8,8 +8,8 @@
 	<Metadata>
 		<Manufacturer>SparkSDR</Manufacturer>
 		<Model>SparkSDR TCI Bridge</Model>
-		<Version>0.1.0</Version>
-		<Status>Beta</Status>
+		<Version>0.0.1</Version>
+		<Status>Alpha</Status>
 		<InterfaceType>TCI</InterfaceType>
 		<Protocol>TCI</Protocol>
 		<CommandEncoding>ASCII</CommandEncoding>

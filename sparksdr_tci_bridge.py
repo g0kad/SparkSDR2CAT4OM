@@ -27,7 +27,8 @@ try:
 except ImportError:
     sys.exit("Missing dependency: pip install websockets")
 
-VERSION = "0.1.0"
+VERSION = "0.0.1-alpha"
+APP_TITLE = f"SparkSDR2CAT4OM alpha {VERSION.split('-')[0]}"
 log = logging.getLogger("bridge")
 
 DEFAULT_CONFIG = {
@@ -388,7 +389,7 @@ class Bridge:
         c = self.cfg
         async with websockets.serve(self.tci_handler, c["tciHost"], c["tciPort"],
                                     max_size=None, ping_interval=20):
-            log.info("SparkSDR TCI bridge %s listening on ws://%s:%d", VERSION,
+            log.info("%s listening on ws://%s:%d", APP_TITLE,
                      c["tciHost"], c["tciPort"])
             if c["rigctlPorts"]:
                 log.info("PTT via rigctl: %s", c["rigctlPorts"])
@@ -409,7 +410,14 @@ def main():
     p.add_argument("--mode-case", choices=["upper", "lower"])
     p.add_argument("-v", "--verbose", action="store_true", help="log every message")
     p.add_argument("--log-file", default="sparksdr_tci_bridge.log")
+    p.add_argument("--version", action="version", version=APP_TITLE)
     a = p.parse_args()
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetConsoleTitleW(APP_TITLE)
+        except Exception:
+            pass
 
     if a.write_config:
         with open(a.write_config, "w") as f:
@@ -443,4 +451,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception as e:
+        # keep the window open when started by double-click from the .exe
+        print(f"\nFatal error: {e!r}")
+        if getattr(sys, "frozen", False):
+            input("Press Enter to close...")
+        raise
