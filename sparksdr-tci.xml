@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioHandbook>
+	<!-- SparkSDR via sparksdr_tci_bridge.py (TCI emulation, control only).
+	     Derived from sunsdr-tci.xml. Only the commands the bridge actually implements are declared,
+	     so CAT4OM's availableCommands gating hides the rest (RIT/XIT, drive, AGC, squelch, CW...).
+	     Audio: route SparkSDR audio through a virtual audio cable and select it in the radio's
+	     CAT4OM audio settings. -->
+	<Metadata>
+		<Manufacturer>SparkSDR</Manufacturer>
+		<Model>SparkSDR TCI Bridge</Model>
+		<Version>0.1.0</Version>
+		<Status>Beta</Status>
+		<InterfaceType>TCI</InterfaceType>
+		<Protocol>TCI</Protocol>
+		<CommandEncoding>ASCII</CommandEncoding>
+		<FrequencyGroups hf="true" vhf="true" uhf="false" shf="false"/>
+		<Terminator>;</Terminator>
+		<FrequencyResolution>1</FrequencyResolution>
+		<PushBased>true</PushBased>
+		<!-- One mode/filter per SparkSDR receiver, shared by VFO A and B. -->
+		<SharedVfoMode>true</SharedVfoMode>
+	</Metadata>
+	<ConnectionDefaults>
+	</ConnectionDefaults>
+	<Capabilities>
+		<Feature name="Frequency" read="true" write="true"/>
+		<Feature name="Mode" read="true" write="true"/>
+		<Feature name="VFO" read="true" write="true"/>
+		<Feature name="Split" read="true" write="true"/>
+		<Feature name="PTT" read="true" write="true"/>
+		<Feature name="MultiTrx" read="true" write="true"/>
+	</Capabilities>
+	<ValueMaps>
+		<!-- TCI modulation (as sent by the bridge in MODULATIONS_LIST/MODULATION) -> CAT4OM standard name.
+		     The bridge maps these to SparkSDR mode names (config key tciToSpark). -->
+		<ValueMap name="ModeMap">
+			<Map key="LSB" value="LSB"/>
+			<Map key="USB" value="USB"/>
+			<Map key="CW" value="CW"/>
+			<Map key="AM" value="AM"/>
+			<Map key="NFM" value="FM"/>
+			<Map key="DIGL" value="DATA-LSB"/>
+			<Map key="DIGU" value="DATA-USB"/>
+		</ValueMap>
+		<ValueMap name="TciBoolMap">
+			<Map key="true" value="true"/>
+			<Map key="false" value="false"/>
+		</ValueMap>
+	</ValueMaps>
+	<AvailableVfos>
+		<Vfo name="A" value="0"/>
+		<Vfo name="B" value="1"/>
+	</AvailableVfos>
+	<!-- Fallback only; overridden at connect time by the bridge's MODULATIONS_LIST -->
+	<SupportedModes>LSB,USB,CW,AM,FM,DATA-LSB,DATA-USB</SupportedModes>
+	<Initialization>
+	</Initialization>
+	<Commands>
+		<!-- VFO:trx,channel,frequency;  channel 0 -> SparkSDR setFrequency, channel 1 held in bridge -->
+		<Command name="SetFrequency">
+			<Description>Set frequency on TRX (SparkSDR receiver) and channel (VFO).</Description>
+			<Request>
+				<Frame>VFO:{TRX},{VFO_VALUE},{FREQ};</Frame>
+				<Parameters>
+					<Param name="TRX" type="int" format="ASCII"/>
+					<Param name="VFO_VALUE" type="string" format=""/>
+					<Param name="FREQ" type="frequency" format="ASCII"/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<!-- MODULATION:trx,mode;  -> SparkSDR setMode -->
+		<Command name="SetMode">
+			<Description>Set mode of the SparkSDR receiver.</Description>
+			<Request>
+				<Frame>MODULATION:{TRX},{MODE};</Frame>
+				<Parameters>
+					<Param name="TRX" type="int" format="ASCII"/>
+					<Param name="MODE" type="mode" format=""/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<!-- TRX:trx,enabled;  -> SparkSDR rigctl "T 1"/"T 0" on that receiver's port -->
+		<Command name="SetPtt">
+			<Description>Set PTT via SparkSDR rigctl.</Description>
+			<Request>
+				<Frame>TRX:{TRX},{ENABLED};</Frame>
+				<Parameters>
+					<Param name="TRX" type="int" format="ASCII"/>
+					<Param name="ENABLED" type="bool" format="BOOL_TCI"/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<!-- SPLIT_ENABLE:trx,enabled;  held in the bridge (state only for now) -->
+		<Command name="SetSplit">
+			<Description>Enable/disable split (bridge state only).</Description>
+			<Request>
+				<Frame>SPLIT_ENABLE:{TRX},{ENABLED};</Frame>
+				<Parameters>
+					<Param name="TRX" type="int" format="ASCII"/>
+					<Param name="ENABLED" type="bool" format="BOOL_TCI"/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<Command name="SetVfo">
+			<Description>Select active VFO by enabling RX channel.</Description>
+			<Request>
+				<Frame>RX_CHANNEL_ENABLE:{TRX},{VFO_VALUE},true;</Frame>
+				<Parameters>
+					<Param name="TRX" type="int" format="ASCII"/>
+					<Param name="VFO_VALUE" type="string" format=""/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<Command name="SendRaw">
+			<Description>Send a raw TCI command string to the bridge (must include ';').</Description>
+			<Request>
+				<Frame>{RAW}</Frame>
+				<Parameters>
+					<Param name="RAW" type="string" format=""/>
+				</Parameters>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<Command name="TciStart">
+			<Description>Start the SparkSDR radio (setRunning true).</Description>
+			<Request>
+				<Frame>START;</Frame>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+		<Command name="TciStop">
+			<Description>Stop the SparkSDR radio (setRunning false).</Description>
+			<Request>
+				<Frame>STOP;</Frame>
+			</Request>
+			<Response>
+				<ExpectEcho>false</ExpectEcho>
+			</Response>
+		</Command>
+	</Commands>
+	<Polling>
+	</Polling>
+	<PushMessages>
+		<!-- VFO:trx,channel,frequency; -->
+		<Message command="VFO" trxArg="0" vfoArg="1">
+			<Field stateKey="frequency" argIndex="2" format="ASCII" type="long"/>
+		</Message>
+		<!-- MODULATION and RX_FILTER_BAND are handled in code by TciPushHandler (SharedVfoMode). -->
+		<!-- TRX:trx,enabled; -->
+		<Message command="TRX" trxArg="0">
+			<Field stateKey="ptt" argIndex="1" format="BOOL_TCI" type="bool"/>
+		</Message>
+		<!-- SPLIT_ENABLE:trx,enabled; -->
+		<Message command="SPLIT_ENABLE" trxArg="0">
+			<Field stateKey="split" argIndex="1" format="BOOL_TCI" type="bool"/>
+		</Message>
+	</PushMessages>
+</RadioHandbook>
